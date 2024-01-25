@@ -10,6 +10,7 @@ import com.personal.interview.hostfully.bookingapp.model.BookingStatus;
 import com.personal.interview.hostfully.bookingapp.repository.BookingRepository;
 import com.personal.interview.hostfully.bookingapp.repository.GuestRepository;
 import com.personal.interview.hostfully.bookingapp.repository.PropertyRepository;
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -123,6 +124,7 @@ class BookingServiceTest {
         Assertions.assertThrows(ResourceNotFoundException.class, () -> service.createBooking(dto));
     }
 
+    @SneakyThrows
     @Test
     public void should_create_booking() {
 
@@ -174,6 +176,7 @@ class BookingServiceTest {
         Assertions.assertThrows(InvalidBookingUpdateException.class, () -> service.updateBooking(aBooking.getId(), dto));
     }
 
+    @SneakyThrows
     @Test
     public void should_update_booking() {
         BookingDto anotherDto = new BookingDto(
@@ -204,13 +207,15 @@ class BookingServiceTest {
     }
 
     @Test
-    public void should_throw_ResourceNotFoundException_if_no_booking_to_cancel(){
-        when( bookingRepository.findById(aCancelledBooking.getId())).thenReturn(Optional.empty());
+    public void should_throw_ResourceNotFoundException_if_no_booking_to_cancel() {
+        when(bookingRepository.findById(aCancelledBooking.getId())).thenReturn(Optional.empty());
         Assertions.assertThrows(ResourceNotFoundException.class, () -> service.cancelBooking(aBooking.getId()));
     }
+    
+    @SneakyThrows
     @Test
-    public void should_not_call_save_because_booking_was_already_cancelled(){
-        when( bookingRepository.findById(aBooking.getId())).thenReturn(Optional.of(aCancelledBooking));
+    public void should_not_call_save_because_booking_was_already_cancelled() {
+        when(bookingRepository.findById(aBooking.getId())).thenReturn(Optional.of(aCancelledBooking));
 
         BookingDto actual = service.cancelBooking(aCancelledBooking.getId());
 
@@ -218,9 +223,10 @@ class BookingServiceTest {
         verifyNoMoreInteractions(bookingRepository);
     }
 
+    @SneakyThrows
     @Test
-    public void should_cancel_a_booking(){
-        when( bookingRepository.findById(aBooking.getId())).thenReturn(Optional.of( new Booking(
+    public void should_cancel_a_booking() {
+        when(bookingRepository.findById(aBooking.getId())).thenReturn(Optional.of(new Booking(
                 1,
                 Date.from(localFromDate.atStartOfDay(ZoneId.of("UTC")).toInstant()),
                 Date.from(localToDate.atStartOfDay(ZoneId.of("UTC")).toInstant()),
@@ -237,26 +243,29 @@ class BookingServiceTest {
 
 
     @Test
-    public void should_throw_ResourceNotFoundException_if_no_booking_to_rebook(){
-        when( bookingRepository.findById(aCancelledBooking.getId())).thenReturn(Optional.empty());
+    public void should_throw_ResourceNotFoundException_if_no_booking_to_rebook() {
+        when(bookingRepository.findById(aCancelledBooking.getId())).thenReturn(Optional.empty());
         Assertions.assertThrows(ResourceNotFoundException.class, () -> service.rebookCencelledBooking(aBooking.getId()));
     }
+
     @Test
-    public void should_throw_InvalidBookingUpdateException_because_booking_was_not_cancelled(){
-        when( bookingRepository.findById(aBooking.getId())).thenReturn(Optional.of(aBooking));
+    public void should_throw_InvalidBookingUpdateException_because_booking_was_not_cancelled() {
+        when(bookingRepository.findById(aBooking.getId())).thenReturn(Optional.of(aBooking));
         Assertions.assertThrows(InvalidBookingUpdateException.class, () -> service.rebookCencelledBooking(aBooking.getId()));
     }
 
     @Test
-    public void should_throw_InvalidBookingUpdateException_if_booking_dates_are_not_available(){
-        when( bookingRepository.findById(aBooking.getId())).thenReturn(Optional.of(aCancelledBooking));
+    public void should_throw_InvalidBookingUpdateException_if_booking_dates_are_not_available() {
+        when(bookingRepository.findById(aBooking.getId())).thenReturn(Optional.of(aCancelledBooking));
         when(bookingRepository.getBookingIdsInDatesAndProperty(any(), any(), any()))
                 .thenReturn(List.of(1, 2, 3));
         Assertions.assertThrows(InvalidBookingUpdateException.class, () -> service.rebookCencelledBooking(aBooking.getId()));
     }
+
+    @SneakyThrows
     @Test
-    public void should_rebook_a_booking(){
-        when( bookingRepository.findById(aBooking.getId())).thenReturn(Optional.of(new Booking(
+    public void should_rebook_a_booking() {
+        when(bookingRepository.findById(aBooking.getId())).thenReturn(Optional.of(new Booking(
                 1,
                 Date.from(localFromDate.atStartOfDay(ZoneId.of("UTC")).toInstant()),
                 Date.from(localToDate.atStartOfDay(ZoneId.of("UTC")).toInstant()),
@@ -275,15 +284,15 @@ class BookingServiceTest {
     }
 
     @Test
-    public void should_call_delete(){
+    public void should_call_delete() {
         service.deleteBooking(aBooking.getId());
-        verify(bookingRepository,times(1)).deleteById(aBooking.getId());
+        verify(bookingRepository, times(1)).deleteById(aBooking.getId());
     }
 
 
     @Test
-    public void should_call_findAll(){
+    public void should_call_findAll() {
         service.getAllBookings();
-        verify(bookingRepository,times(1)).findAll();
+        verify(bookingRepository, times(1)).findAll();
     }
 }

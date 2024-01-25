@@ -12,7 +12,6 @@ import com.personal.interview.hostfully.bookingapp.model.Property;
 import com.personal.interview.hostfully.bookingapp.repository.BookingRepository;
 import com.personal.interview.hostfully.bookingapp.repository.GuestRepository;
 import com.personal.interview.hostfully.bookingapp.repository.PropertyRepository;
-import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -33,13 +32,11 @@ public class BookingService {
         this.propertyRepository = propertyRepository;
     }
 
-    @SneakyThrows
-    public BookingDto getBooking(int id) {
+    public BookingDto getBooking(int id) throws ResourceNotFoundException {
         return bookingRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("No bookings found")).toDto();
     }
 
-    @SneakyThrows
-    public BookingDto createBooking(BookingDto bookingDto) {
+    public BookingDto createBooking(BookingDto bookingDto) throws InvalidBookingDatesException, BookingNotAvailableException, ResourceNotFoundException {
         validateDtoDates(bookingDto);
         List<Integer> existingBookings = bookingRepository.getBookingIdsInDatesAndProperty(bookingDto.getToDate(), bookingDto.getFromDate(), bookingDto.getPropertyId());
         if (!existingBookings.isEmpty()) {
@@ -51,8 +48,7 @@ public class BookingService {
         return bookingRepository.save(toBookingModel(bookingDto, guest, property)).toDto();
     }
 
-    @SneakyThrows
-    public BookingDto updateBooking(int id, BookingDto bookingDto) {
+    public BookingDto updateBooking(int id, BookingDto bookingDto) throws InvalidBookingUpdateException, ResourceNotFoundException, InvalidBookingDatesException {
         validateDtoDates(bookingDto);
         Booking booking = bookingRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("No booking with id :" + id));
         if (!booking.getStatus().equals(bookingDto.getStatus())) {
@@ -73,8 +69,7 @@ public class BookingService {
         }
     }
 
-    @SneakyThrows
-    public BookingDto cancelBooking(int id) {
+    public BookingDto cancelBooking(int id) throws  ResourceNotFoundException{
         Booking booking = bookingRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("No booking with id :" + id));
         if (!booking.getStatus().equals(BookingStatus.CANCELLED)) {
             booking.setStatus(BookingStatus.CANCELLED);
@@ -83,10 +78,9 @@ public class BookingService {
         return booking.toDto();
     }
 
-    @SneakyThrows
-    public BookingDto rebookCencelledBooking(int id) {
+    public BookingDto rebookCencelledBooking(int id) throws InvalidBookingUpdateException, ResourceNotFoundException {
         Booking booking = bookingRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("No booking with id :" + id));
-        if(booking.getStatus().equals(BookingStatus.NORMAL)){
+        if (booking.getStatus().equals(BookingStatus.NORMAL)) {
             throw new InvalidBookingUpdateException("Cant rebook booking because it was not cancelled");
         }
         List<Integer> existingBookings = bookingRepository.getBookingIdsInDatesAndProperty(booking.getToDate(), booking.getFromDate(), booking.getProperty().getId());
@@ -112,7 +106,7 @@ public class BookingService {
 
     private Guest getGuestByName(BookingDto bookingDto) {
         return guestRepository.findByName(bookingDto.getGuestName())
-                .orElseGet(()->guestRepository.save(Guest.builder().name(bookingDto.getGuestName()).build()));
+                .orElseGet(() -> guestRepository.save(Guest.builder().name(bookingDto.getGuestName()).build()));
     }
 
     private Booking toBookingModel(BookingDto bookingDto, Guest guest, Property property) {

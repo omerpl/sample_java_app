@@ -1,6 +1,7 @@
 package com.personal.interview.hostfully.bookingapp.controller;
 
 import com.personal.interview.hostfully.bookingapp.dto.BookingDto;
+import com.personal.interview.hostfully.bookingapp.exception.ResourceNotFoundException;
 import com.personal.interview.hostfully.bookingapp.service.BookingService;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +28,7 @@ public class BookingController {
     }
 
     @GetMapping("/{id}")
-    public BookingDto getBooking(@PathVariable Integer id) {
+    public BookingDto getBooking(@PathVariable Integer id) throws ResourceNotFoundException {
         return service.getBooking(id);
     }
 
